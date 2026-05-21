@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Yug · Outreach HQ</title>
+<style>
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
+  --accent:#6c63ff;--accent2:#ff6584;--accent3:#43e97b;--gold:#f7b731;
+  --text:#e8e8f0;--muted:#6b6b8a;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --font-head: -apple-system, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Courier New", monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);display:flex;flex-direction:column;}
+
+/* ── HEADER ── */
+.header{
+  background:linear-gradient(135deg,#0d0d1a 0%,#1a1040 50%,#0d1a1a 100%);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;
+  padding-top:calc(12px + var(--safe-top));
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;gap:10px;
+}
+.logo{font-family:var(--font-head);font-size:17px;font-weight:800;letter-spacing:-0.5px;white-space:nowrap;}
+.logo span{color:var(--accent);}
+.header-stats{display:flex;gap:14px;align-items:center;}
+.hstat{text-align:center;}
+.hstat-val{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--accent);line-height:1;}
+.hstat-label{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+.queue-btn{
+  background:linear-gradient(135deg,var(--accent),#8b5cf6);
+  border:none;color:white;font-family:var(--font-head);font-weight:700;font-size:12px;
+  padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+
+/* ── BOTTOM NAV (mobile) ── */
+.bottom-nav{
+  display:flex;border-top:1px solid var(--border);background:var(--surface);
+  flex-shrink:0;padding-bottom:var(--safe-bottom);
+}
+.bnav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 4px;cursor:pointer;gap:3px;transition:all .15s;
+  border-top:2px solid transparent;
+}
+.bnav-item.active{border-top-color:var(--accent);}
+.bnav-item .icon{font-size:20px;line-height:1;}
+.bnav-item .label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-head);font-weight:600;}
+.bnav-item.active .label{color:var(--accent);}
+
+/* ── SCROLL AREA ── */
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.scroll-area::-webkit-scrollbar{width:3px;}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── PANELS ── */
+.panel{display:none;padding:16px;}
+.panel.active{display:block;}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.kpi-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px 12px;position:relative;overflow:hidden;
+}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);}
+.kpi-card.gold::before{background:var(--gold);}
+.kpi-card.green::before{background:var(--accent3);}
+.kpi-card.red::before{background:var(--accent2);}
+.kpi-label{font-size:8px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:6px;}
+.kpi-val{font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1;margin-bottom:2px;}
+.kpi-sub{font-size:9px;color:var(--muted);}
+
+/* ── SECTION CARD ── */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.section-title{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.section-title .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+
+/* ── QUEUE ITEM ── */
+.queue-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.queue-item:last-child{border-bottom:none;}
+.avatar{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:700;font-size:12px;flex-shrink:0;}
+.qi-info{flex:1;min-width:0;}
+.qi-name{font-family:var(--font-head);font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qi-meta{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── BADGES ── */
+.badge{font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+.badge.primary{background:rgba(108,99,255,.15);color:#a89fff;border:1px solid rgba(108,99,255,.3);}
+.badge.secondary{background:rgba(255,101,132,.15);color:#ff9ab0;border:1px solid rgba(255,101,132,.3);}
+.badge.tertiary{background:rgba(67,233,123,.15);color:#7fffaa;border:1px solid rgba(67,233,123,.3);}
+
+/* ── PROGRESS ── */
+.progress-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px;}
+.progress-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .6s ease;}
+.tier-row{padding:8px 0;border-bottom:1px solid var(--border);}
+.tier-row:last-child{border-bottom:none;}
+.tier-header{display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px;}
+
+/* ── CONTACT CARDS (mobile-first tracker) ── */
+.contact-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.cc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.cc-info{flex:1;min-width:0;}
+.cc-name{font-family:var(--font-head);font-size:14px;font-weight:700;}
+.cc-company{font-size:11px;color:var(--muted);margin-top:2px;}
+.cc-title{font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.cc-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* ── STATUS BADGES ── */
+.status-badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+.status-badge.not-started{background:rgba(107,107,138,.15);color:var(--muted);border:1px solid rgba(107,107,138,.3);}
+.status-badge.contacted{background:rgba(247,183,49,.15);color:#f7b731;border:1px solid rgba(247,183,49,.3);}
+.status-badge.replied{background:rgba(67,233,123,.15);color:#43e97b;border:1px solid rgba(67,233,123,.3);}
+.status-badge.follow-up{background:rgba(255,101,132,.15);color:#ff6584;border:1px solid rgba(255,101,132,.3);}
+.status-badge.interview{background:rgba(108,99,255,.2);color:var(--accent);border:1px solid rgba(108,99,255,.4);}
+.status-badge.closed{background:rgba(50,50,70,.5);color:#444466;border:1px solid rgba(50,50,70,.5);}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 16px;border-radius:7px;font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:.4px;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.action-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:7px 12px;font-size:11px;font-family:var(--font-mono);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.action-btn:hover,.action-btn:active{border-color:var(--accent);color:var(--accent);}
+.action-btn.prim{background:var(--accent);border-color:var(--accent);color:white;}
+.action-btn.prim:active{background:#5a52dd;}
+.copy-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:7px 12px;font-size:11px;font-family:var(--font-mono);cursor:pointer;transition:all .15s;}
+.copy-btn.copied,.copy-btn:active{border-color:var(--accent3);color:var(--accent3);}
+
+/* ── SEARCH / FILTERS ── */
+.search-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.search-input{flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--muted);}
+.filter-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer;}
+
+/* ── AI PANEL ── */
+.composer-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.composer-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.composer-title{font-family:var(--font-head);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);}
+.gen-btn{background:linear-gradient(135deg,var(--accent),#8b5cf6);border:none;color:white;font-family:var(--font-head);font-weight:700;font-size:11px;padding:7px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.gen-btn:disabled{opacity:.5;cursor:not-allowed;}
+.subject-bar{padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;}
+.subject-label{color:var(--muted);}
+.subject-val{color:var(--gold);}
+.email-output{padding:16px;font-size:11px;line-height:1.7;white-space:pre-wrap;min-height:120px;}
+.email-output.ph{color:var(--muted);font-style:italic;}
+.composer-footer{display:flex;gap:6px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;}
+.char-count{font-size:10px;color:var(--muted);padding:0 16px 8px;text-align:right;}
+.char-count.warn{color:var(--accent2);}
+
+/* ── AI CONTACT PICKER ── */
+.ai-picker{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.ai-picker-header{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--font-head);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);}
+.ai-picker-search{width:100%;background:var(--surface2);border:none;border-bottom:1px solid var(--border);padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;}
+.ai-picker-search::placeholder{color:var(--muted);}
+.ai-contact-list{max-height:220px;overflow-y:auto;}
+.ai-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.ai-row:last-child{border-bottom:none;}
+.ai-row:active,.ai-row.sel{background:rgba(108,99,255,.12);}
+.ai-row.sel{border-left:3px solid var(--accent);}
+.ar-info{flex:1;min-width:0;}
+.ar-name{font-family:var(--font-head);font-size:12px;font-weight:600;}
+.ar-sub{font-size:10px;color:var(--muted);}
+
+/* ── WEEKLY ── */
+.week-day{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.week-day-header{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-family:var(--font-head);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;justify-content:space-between;}
+.task-count{background:rgba(108,99,255,.15);color:var(--accent);font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;}
+.week-task{padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;}
+.week-task:last-child{border-bottom:none;}
+.week-task strong{display:block;color:var(--text);font-family:var(--font-head);font-size:11px;margin-bottom:2px;}
+.week-task span{color:var(--muted);}
+.tip-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+
+/* ── FOLLOW-UPS ── */
+.fu-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.fu-card.urgent{border-color:rgba(255,101,132,.35);}
+.fu-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.fu-info{flex:1;min-width:0;}
+.fu-name{font-family:var(--font-head);font-size:14px;font-weight:700;}
+.fu-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.fu-when{text-align:right;flex-shrink:0;}
+.fu-date{font-family:var(--font-head);font-size:13px;font-weight:700;}
+.fu-sub{font-size:9px;color:var(--muted);}
+.fu-msg{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px;font-size:11px;line-height:1.6;color:var(--muted);margin-bottom:10px;}
+.fu-msg strong{color:var(--text);display:block;margin-bottom:4px;}
+.fu-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:var(--safe-bottom);}
+@media(min-width:600px){
+  .modal-overlay{align-items:center;}
+  .modal{border-radius:16px;max-width:560px;max-height:80vh;}
+}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-title{font-family:var(--font-head);font-size:15px;font-weight:700;}
+.modal-close{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:20px;}
+.field-row{margin-bottom:14px;}
+.field-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px;display:block;}
+.field-input,.field-select,.field-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent);}
+.field-textarea{resize:vertical;min-height:70px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--surface2);}
+
+/* ── EMAIL MODAL ── */
+.email-modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:var(--safe-bottom);}
+@media(min-width:600px){.email-modal{border-radius:16px;max-width:600px;max-height:85vh;}}
+.email-to{padding:10px 20px;border-bottom:1px solid var(--border);font-size:11px;}
+.email-to-label{color:var(--muted);}
+.email-to-val{color:var(--text);}
+.email-body-wrap{padding:16px 20px;font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);}
+
+/* ── TODAY QUEUE MODAL ── */
+.queue-section-title{font-family:var(--font-head);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:14px 0 8px;}
+.qm-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:8px;margin-bottom:6px;}
+.qm-info{flex:1;min-width:0;}
+.qm-name{font-family:var(--font-head);font-size:12px;font-weight:700;}
+.qm-meta{font-size:10px;color:var(--muted);}
+
+/* ── LOADING ── */
+.loading{display:inline-flex;gap:4px;align-items:center;}
+.loading span{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:bounce 1.2s infinite;}
+.loading span:nth-child(2){animation-delay:.2s;}
+.loading span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:32px 16px;color:var(--muted);font-size:12px;}
+.empty-state .icon{font-size:28px;margin-bottom:8px;}
+
+/* ── ALERT ROW ── */
+.alert-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;margin-bottom:6px;border:1px solid var(--border);background:var(--surface2);font-size:11px;}
+.alert-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.alert-row.urgent .alert-dot{background:var(--accent2);box-shadow:0 0 6px rgba(255,101,132,.5);}
+.alert-row.normal .alert-dot{background:var(--gold);}
+
+/* ── DESKTOP SPECIFIC ── */
+@media(min-width:768px){
+  .header{padding:16px 28px;}
+  .logo{font-size:19px;}
+  .panel{padding:24px 28px;}
+  .kpi-grid{grid-template-columns:repeat(6,1fr);}
+  .bottom-nav{display:none;}
+  .desktop-tabs{display:flex!important;}
+  .kpi-val{font-size:32px;}
+  .ai-desktop{display:grid!important;grid-template-columns:1fr 1.3fr;gap:20px;}
+  .ai-picker{margin-bottom:0;}
+  .ai-contact-list{max-height:480px;}
+}
+.desktop-tabs{
+  display:none;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  padding:0 28px;
+  overflow-x:auto;
+  flex-shrink:0;
+}
+.dtab{
+  padding:13px 22px;
+  font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;
+}
+.dtab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.ai-desktop{display:block;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">Yug · <span>Outreach</span></div>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-val" id="hs-total">65</div><div class="hstat-label">Total</div></div>
+    <div class="hstat"><div class="hstat-val" id="hs-done" style="color:var(--gold)">0</div><div class="hstat-label">Sent</div></div>
+    <div class="hstat"><div class="hstat-val" id="hs-rep" style="color:var(--accent3)">0</div><div class="hstat-label">Replies</div></div>
+  </div>
+  <button class="queue-btn" onclick="showQueueModal()">📋 Queue</button>
+</div>
+
+<!-- DESKTOP TABS -->
+<div class="desktop-tabs" id="desktop-tabs">
+  <div class="dtab active" onclick="switchTab('dashboard')">Dashboard</div>
+  <div class="dtab" onclick="switchTab('tracker')">Tracker</div>
+  <div class="dtab" onclick="switchTab('ai')">AI Emails</div>
+  <div class="dtab" onclick="switchTab('weekly')">Weekly Plan</div>
+  <div class="dtab" onclick="switchTab('followups')">Follow-Ups</div>
+</div>
+
+<!-- SCROLL AREA -->
+<div class="scroll-area" id="main-scroll">
+
+  <!-- DASHBOARD -->
+  <div class="panel active" id="panel-dashboard">
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Pipeline</div><div class="kpi-val" style="color:var(--accent)" id="kpi-total">65</div><div class="kpi-sub">all contacts</div></div>
+      <div class="kpi-card gold"><div class="kpi-label">Contacted</div><div class="kpi-val" style="color:var(--gold)" id="kpi-cont">0</div><div class="kpi-sub">sent outreach</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Replies</div><div class="kpi-val" style="color:var(--accent3)" id="kpi-rep">0</div><div class="kpi-sub">positive</div></div>
+      <div class="kpi-card"><div class="kpi-label">Primary</div><div class="kpi-val" style="color:#a89fff">31</div><div class="kpi-sub">peers</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Secondary</div><div class="kpi-val" style="color:#ff9ab0">16</div><div class="kpi-sub">hiring</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Tertiary</div><div class="kpi-val" style="color:#7fffaa">18</div><div class="kpi-sub">recruiters</div></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><span class="dot"></span>Today's Queue</div>
+      <div id="dash-queue"></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><span class="dot" style="background:var(--gold)"></span>Progress by Tier</div>
+      <div id="tier-progress"></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><span class="dot" style="background:var(--accent2)"></span>Follow-Ups Due</div>
+      <div id="dash-followups"></div>
+    </div>
+  </div>
+
+  <!-- TRACKER -->
+  <div class="panel" id="panel-tracker">
+    <div class="search-row">
+      <input type="text" class="search-input" id="search-input" placeholder="Search name, company..." oninput="renderTracker()">
+      <select class="filter-select" id="tier-filter" onchange="renderTracker()">
+        <option value="">All Tiers</option>
+        <option value="Primary">Primary</option>
+        <option value="Secondary">Secondary</option>
+        <option value="Tertiary">Tertiary</option>
+      </select>
+      <select class="filter-select" id="status-filter" onchange="renderTracker()">
+        <option value="">All Status</option>
+        <option value="Not Started">Not Started</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Replied">Replied</option>
+        <option value="Follow-Up">Follow-Up</option>
+        <option value="Interview">Interview</option>
+        <option value="Closed">Closed</option>
+      </select>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px" id="tracker-count"></div>
+    <div id="tracker-list"></div>
+    <div id="tracker-pagination" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:8px 0;"></div>
+  </div>
+
+  <!-- AI EMAILS -->
+  <div class="panel" id="panel-ai">
+    <div class="ai-desktop" id="ai-desktop">
+      <div class="ai-picker">
+        <div class="ai-picker-header">Select Contact</div>
+        <input type="text" class="ai-picker-search" id="ai-search" placeholder="Search..." oninput="renderAIList()">
+        <div class="ai-contact-list" id="ai-list"></div>
+      </div>
+      <div id="ai-composer">
+        <div class="composer-card">
+          <div class="composer-header">
+            <span class="composer-title">📧 Email</span>
+            <button class="gen-btn" id="gen-email-btn" onclick="generateEmail()" disabled><span id="gen-email-icon">✨</span> AI Generate</button>
+          </div>
+          <div class="subject-bar"><span class="subject-label">Subject: </span><span class="subject-val" id="email-subject">— pick a contact —</span></div>
+          <div class="email-output ph" id="email-output">Select a contact above to generate a personalised email…</div>
+          <div class="composer-footer">
+            <button class="copy-btn" onclick="copyEmail()">📋 Copy</button>
+            <button class="action-btn" onclick="openEmailModal()">📨 Full Preview</button>
+            <button class="action-btn" onclick="openLinkedIn()">🔗 LinkedIn</button>
+            <button class="action-btn prim" onclick="markContacted()">✓ Contacted</button>
+          </div>
+        </div>
+        <div class="composer-card">
+          <div class="composer-header">
+            <span class="composer-title">💼 LinkedIn Message</span>
+            <button class="gen-btn" id="gen-li-btn" onclick="generateLI()" disabled><span id="gen-li-icon">✨</span> AI Generate</button>
+          </div>
+          <div class="email-output ph" id="li-output" style="min-height:70px;">LinkedIn message will appear here…</div>
+          <div class="char-count" id="char-count">0 / 300</div>
+          <div class="composer-footer">
+            <button class="copy-btn" onclick="copyLI()">📋 Copy</button>
+            <button class="action-btn" onclick="openLinkedIn()">🔗 Open Profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div class="panel" id="panel-weekly">
+    <div style="font-family:var(--font-head);font-size:18px;font-weight:800;margin-bottom:4px;">Weekly Execution Plan</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;">Daily non-negotiables to land in the top 0.01%</div>
+    <div id="weekly-content"></div>
+    <div style="font-family:var(--font-head);font-size:14px;font-weight:800;margin:16px 0 10px;">🎯 Expert Tactics</div>
+    <div id="tips-content"></div>
+  </div>
+
+  <!-- FOLLOW-UPS -->
+  <div class="panel" id="panel-followups">
+    <div style="font-family:var(--font-head);font-size:18px;font-weight:800;margin-bottom:4px;">Follow-Up Manager</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;">5–7 day follow-up rule · contacts due soon</div>
+    <div id="followups-list"></div>
+  </div>
+
+</div><!-- /scroll-area -->
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav" id="bottom-nav">
+  <div class="bnav-item active" onclick="switchTab('dashboard')"><div class="icon">📊</div><div class="label">Dash</div></div>
+  <div class="bnav-item" onclick="switchTab('tracker')"><div class="icon">👥</div><div class="label">Tracker</div></div>
+  <div class="bnav-item" onclick="switchTab('ai')"><div class="icon">✨</div><div class="label">AI Email</div></div>
+  <div class="bnav-item" onclick="switchTab('weekly')"><div class="icon">📅</div><div class="label">Plan</div></div>
+  <div class="bnav-item" onclick="switchTab('followups')"><div class="icon">🔁</div><div class="label">Follow</div></div>
+</div>
+
+<!-- UPDATE MODAL -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Update Contact</div>
+      <button class="modal-close" onclick="closeModal('status-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row"><label class="field-label">Status</label>
+        <select class="field-select" id="modal-status">
+          <option value="Not Started">Not Started</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Replied">Replied</option>
+          <option value="Follow-Up">Follow-Up Due</option>
+          <option value="Interview">Interview</option>
+          <option value="Closed">Closed</option>
+        </select>
+      </div>
+      <div class="field-row"><label class="field-label">Date Contacted</label><input type="date" class="field-input" id="modal-contacted"></div>
+      <div class="field-row"><label class="field-label">Follow-Up Date</label><input type="date" class="field-input" id="modal-followup"></div>
+      <div class="field-row"><label class="field-label">Notes</label><textarea class="field-textarea" id="modal-notes" placeholder="Notes…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('status-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL PREVIEW MODAL -->
+<div class="modal-overlay" id="email-modal">
+  <div class="modal-overlay" id="email-modal" style="display:none;"><!-- nested fallback --></div>
+  <div class="email-modal">
+    <div class="modal-header">
+      <div class="modal-title">📨 Email Preview</div>
+      <button class="modal-close" onclick="closeModal('email-modal')">✕</button>
+    </div>
+    <div class="email-to"><span class="email-to-label">To: </span><span class="email-to-val" id="email-to-val"></span></div>
+    <div class="email-to"><span class="email-to-label">Subject: </span><span class="email-to-val" id="email-subject-modal"></span></div>
+    <div class="email-body-wrap" id="email-body-modal"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('email-modal')">Close</button>
+      <button class="btn btn-primary" onclick="copyEmailFromModal()">📋 Copy Email</button>
+      <button class="btn btn-primary" onclick="openMailto()">✉️ Open in Mail</button>
+    </div>
+  </div>
+</div>
+
+<!-- TODAY'S QUEUE MODAL -->
+<div class="modal-overlay" id="queue-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 Today's Queue</div>
+      <button class="modal-close" onclick="closeModal('queue-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="queue-modal-body">
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONTACTS DATA
+// ============================================================
+const INIT = [{"tier":"Primary","company":"Fenergo","firstName":"Anthony","lastName":"Hanley","title":"Security Operations Analyst","email":"anthony.hanley@fenergo.com","linkedin":"http://www.linkedin.com/in/anthony-hanley-52bbb5282","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":".ie","firstName":"Mohd","lastName":"Kamaruzaman","title":"Data Analyst","email":"mkamaruzaman@weare.ie","linkedin":"http://www.linkedin.com/in/mohdhafizbinkamaruzaman","industry":"information technology & services","employees":"46","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Flipdish","firstName":"Stephen","lastName":"Kilcommins","title":"Data Analyst","email":"stephen.kilcommins@flipdish.com","linkedin":"http://www.linkedin.com/in/stephen-kilcommins","industry":"information technology & services","employees":"250","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"iCabbi","firstName":"Trystan","lastName":"Marissal","title":"Data Analyst","email":"trystan.marissal@icabbi.com","linkedin":"http://www.linkedin.com/in/trystan-marissal","industry":"information technology & services","employees":"150","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"AccountsIQ","firstName":"Aditi","lastName":"Sidnerlikar","title":"Reporting & Data Analyst","email":"asidnerlikar@accountsiq.com","linkedin":"http://www.linkedin.com/in/aditi-sidnerlikar-716871205","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"WrxFlo","firstName":"Vinicius","lastName":"Silva","title":"Business Intelligence Specialist","email":"vinicius.silva@wrxflo.com","linkedin":"http://www.linkedin.com/in/vinicius-silva-a15089120","industry":"information technology & services","employees":"48","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Conor","lastName":"Fowler","title":"Security Operations Analyst","email":"conor.fowler@fenergo.com","linkedin":"http://www.linkedin.com/in/conor-fowler","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Spanish Point Technologies","firstName":"Cian","lastName":"Mullarkey","title":"Data Analyst","email":"cian.mullarkey@spanishpoint.ie","linkedin":"http://www.linkedin.com/in/cian-mullarkey-95892b186","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Datalex","firstName":"Rahul","lastName":"Raj","title":"Data Analyst","email":"rahul.raj@datalex.com","linkedin":"http://www.linkedin.com/in/rahulraj1996","industry":"information technology & services","employees":"160","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Rodrigo","lastName":"Rovella","title":"Business Sales Data Analyst","email":"rodrigo.torres@fenergo.com","linkedin":"http://www.linkedin.com/in/rodrigotorresrovella","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Nutritics","firstName":"Niall","lastName":"Gleeson","title":"Integrations & Data Analyst","email":"niall@nutritics.com","linkedin":"http://www.linkedin.com/in/nialltgleeson","industry":"information technology & services","employees":"83","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"SoftCo","firstName":"Robert","lastName":"Lynch","title":"Data Analyst","email":"robert.lynch@softco.com","linkedin":"http://www.linkedin.com/in/robert-lynch-14b06330","industry":"information technology & services","employees":"170","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"CitySwift","firstName":"Seana","lastName":"Healy","title":"Insights Analyst","email":"seana.healy@cityswift.com","linkedin":"http://www.linkedin.com/in/se%c3%a1na-healy-a5450b129","industry":"information technology & services","employees":"84","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Dealer Marketing LTD","firstName":"Guillermo","lastName":"","title":"Data Analyst","email":"guillermo@dealermarketing.ie","linkedin":"http://www.linkedin.com/in/guillermogomezzacarias","industry":"marketing & advertising","employees":"15","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"ID-Pal","firstName":"Tanzeeb","lastName":"Iqbal","title":"Business Intelligence Analyst","email":"tanzeeb.iqbal@id-pal.com","linkedin":"http://www.linkedin.com/in/tanzeeb-iqbal-69398585","industry":"information technology & services","employees":"53","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"ESW","firstName":"Larissa","lastName":"Boldrini","title":"Data Analyst","email":"lboldrini@eshopworld.com","linkedin":"http://www.linkedin.com/in/larissa-boldrini-3a39181a1","industry":"information technology & services","employees":"1100","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Ronan","lastName":"McGuire","title":"Security Operations Center Analyst","email":"ronan.mcguire@fenergo.com","linkedin":"http://www.linkedin.com/in/ronan-mcguire-22a4ba80","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Joe","lastName":"O'Connor","title":"Graduate Product Operations Analyst","email":"joe.oconnor@fenergo.com","linkedin":"http://www.linkedin.com/in/joe-o-connor-450796250","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Kneat Solutions","firstName":"Dharshan","lastName":"Satish","title":"Business Intelligence Developer (R&D)","email":"dharshan.satish@kneat.com","linkedin":"http://www.linkedin.com/in/dharshan-jembige-satish","industry":"information technology & services","employees":"300","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Eagle Alpha","firstName":"Yashas","lastName":"Shetty","title":"Business Analyst - Data Sourcing and Advisory","email":"yashas.shetty@eaglealpha.com","linkedin":"http://www.linkedin.com/in/shettyyashas","industry":"financial services","employees":"41","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Mansi","lastName":"Desai","title":"Data Analyst","email":"mansi.desai@fenergo.com","linkedin":"http://www.linkedin.com/in/mansi-desai97","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Core Optimisation","firstName":"Rohit","lastName":"Vad","title":"Data Analyst","email":"rohit@coreoptimisation.com","linkedin":"http://www.linkedin.com/in/rohit-vad","industry":"marketing & advertising","employees":"52","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Dhanya","lastName":"Jagadeesha","title":"Data Analyst","email":"dhanya.jagadeesha@fenergo.com","linkedin":"http://www.linkedin.com/in/dhanyamj","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"ESW","firstName":"Vaibhavi","lastName":"Khobragade","title":"Revenue Operations Analyst","email":"vakhobragade@esw.com","linkedin":"http://www.linkedin.com/in/vaibhavi-khobragade-9a2995145","industry":"information technology & services","employees":"1100","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Ciaran","lastName":"Cashman","title":"Product Operations Analyst","email":"ciaran.cashman@fenergo.com","linkedin":"http://www.linkedin.com/in/ciaran-cashman-732588198","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"CitySwift","firstName":"Cathal","lastName":"Fallon","title":"Senior Data Operations Analyst","email":"cathal.fallon@cityswift.com","linkedin":"http://www.linkedin.com/in/cathal-fallon-34139426","industry":"information technology & services","employees":"84","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Core Optimisation","firstName":"Yash","lastName":"Shahane","title":"Data Analyst","email":"yash@coreoptimisation.com","linkedin":"http://www.linkedin.com/in/yash-shahane-507096211","industry":"marketing & advertising","employees":"52","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Carolyn","lastName":"Whelan","title":"Security Operations Analyst","email":"carolynkeogh.whelan@fenergo.com","linkedin":"http://www.linkedin.com/in/carolynkeogh","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Fenergo","firstName":"Ipshita","lastName":"Rong","title":"Data Analyst","email":"ipshita.rong@fenergo.com","linkedin":"http://www.linkedin.com/in/ipshita-rong-33b9a98b","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"AccountsIQ","firstName":"Arushi","lastName":"Garg","title":"Reporting and Data Analyst","email":"agarg@accountsiq.com","linkedin":"http://www.linkedin.com/in/arushigarg1507","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Primary","company":"Spanish Point Technologies","firstName":"Christopher","lastName":"Eluvathingal","title":"Data Analyst","email":"christopher.eluvathingal@spanishpoint.ie","linkedin":"http://www.linkedin.com/in/christopher-eluvathingal","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"ProStrategy","firstName":"John","lastName":"Lyons","title":"Practice Director - Analytics & Business Performance Management","email":"jlyons@prostrategy.ie","linkedin":"http://www.linkedin.com/in/john-lyons-2a6b7638","industry":"information technology & services","employees":"78","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"Intact UKI","firstName":"Kerrie","lastName":"Farrell","title":"Senior Project Manager & Team Lead","email":"kerrie.farrell@intactsoftware.com","linkedin":"http://www.linkedin.com/in/kerrie-farrell-a92aaa40","industry":"information technology & services","employees":"140","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"Aryza","firstName":"Agnieszka","lastName":"Henclewska","title":"Business Intelligence Manager","email":"agnieszka.henclewska@aryza.com","linkedin":"http://www.linkedin.com/in/agnieszka-henclewska-a3a090a7","industry":"information technology & services","employees":"450","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"ProStrategy","firstName":"Leonardo","lastName":"Lima","title":"Data Architect / Analytics Manager","email":"llima@prostrategy.ie","linkedin":"http://www.linkedin.com/in/leonardo-lima-96988872","industry":"information technology & services","employees":"78","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"Spanish Point Technologies","firstName":"Clare","lastName":"Faughey","title":"Team Lead / Support Engineer / Dynamics Developer","email":"clare.faughey@spanishpoint.ie","linkedin":"http://www.linkedin.com/in/clarefaughey","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"ESW","firstName":"Evan","lastName":"Beggs","title":"Senior Revenue Operations Manager","email":"ebeggs@esw.com","linkedin":"http://www.linkedin.com/in/evan-beggs-0565a9105","industry":"information technology & services","employees":"1100","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"Core Optimisation","firstName":"Tony","lastName":"Newlands","title":"Data & Measurement Lead","email":"tony@coreoptimisation.com","linkedin":"http://www.linkedin.com/in/tony-newlands-9a7596176","industry":"marketing & advertising","employees":"52","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"Spanish Point Technologies","firstName":"Vineet","lastName":"Bhatnagar","title":"Analyst","email":"vineet.bhatnagar@spanishpoint.ie","linkedin":"http://www.linkedin.com/in/vineet-bhatnagar-7a694913a","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"CitySwift","firstName":"Damien","lastName":"Lafferty","title":"Director of Data Analytics","email":"damien.lafferty@cityswift.com","linkedin":"http://www.linkedin.com/in/damien-lafferty-88284762","industry":"information technology & services","employees":"84","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"WrxFlo","firstName":"Willyam","lastName":"D'Alessandro","title":"Head of Analytics & AI","email":"willyam.dalessandro@wrxflo.com","linkedin":"http://www.linkedin.com/in/willyam-d-alessandro-4074b9115","industry":"information technology & services","employees":"48","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"OpenSky Data Systems","firstName":"Srinivas","lastName":"Gurusamy","title":"Team Lead","email":"sgurusamy@openskydata.com","linkedin":"http://www.linkedin.com/in/srinivas-gurusamy-3a45801a","industry":"information technology & services","employees":"66","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"Spanish Point Technologies","firstName":"Lana","lastName":"Korshunova","title":"Data Analytics & AI Lead","email":"svetlana.korshunova@spanishpoint.ie","linkedin":"http://www.linkedin.com/in/lana-korshunova-367869197","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"SoftCo","firstName":"Javier","lastName":"Ruiz","title":"Senior Solutions Consultant","email":"javier.ruiz@softco.com","linkedin":"http://www.linkedin.com/in/javier-ruiz-193171115","industry":"information technology & services","employees":"170","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"OpenSky Data Systems","firstName":"Bharat","lastName":"Thanki","title":"Senior Software Engineer Team Lead","email":"bthanki@openskydata.com","linkedin":"http://www.linkedin.com/in/bharat-thanki-8b68084","industry":"information technology & services","employees":"66","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"Fenergo","firstName":"Aaron","lastName":"Daly","title":"Pricing & Margin Analytics Lead","email":"aaron.daly@fenergo.com","linkedin":"http://www.linkedin.com/in/aaron-daly-612a21140","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Secondary","company":"ESW","firstName":"Sudhanthiran","lastName":"Bhaskar","title":"Manager, Data & BI","email":"sbhaskar@esw.com","linkedin":"http://www.linkedin.com/in/sudhanthiran","industry":"information technology & services","employees":"1100","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Deciphex","firstName":"Elizabeth","lastName":"Murphy","title":"Talent Acquisition Business Partner","email":"elizabeth.murphy@deciphex.com","linkedin":"http://www.linkedin.com/in/elizabethmurphycipd","industry":"information technology & services","employees":"270","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Zyte","firstName":"Claire","lastName":"Brady","title":"Senior Talent Acquisition Specialist","email":"claire.brady@zyte.com","linkedin":"http://www.linkedin.com/in/claire-brady-12505ba7","industry":"information technology & services","employees":"230","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Zinkworks","firstName":"Saoirse","lastName":"Bardin","title":"Recruiter","email":"saoirse.bardin@zinkworks.com","linkedin":"http://www.linkedin.com/in/saoirse-bardin-2435b5a8","industry":"information technology & services","employees":"230","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Holafly","firstName":"Adarsh","lastName":"Kotwal","title":"Talent Acquisition Manager","email":"adarsh.kotwal@holafly.com","linkedin":"http://www.linkedin.com/in/adarshkotwal","industry":"telecommunications","employees":"750","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Zinkworks","firstName":"John","lastName":"Cooney","title":"Recruitment Consultant","email":"john.cooney@zinkworks.com","linkedin":"http://www.linkedin.com/in/john-cooney-763bba305","industry":"information technology & services","employees":"230","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Fenergo","firstName":"Adrian","lastName":"Durr","title":"Talent Partner - GTM/Commercial","email":"adrian.durr@fenergo.com","linkedin":"http://www.linkedin.com/in/adriandurr","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Nuitée","firstName":"Andrew","lastName":"Handcock","title":"Senior Talent Acquisition Partner","email":"a.handcock@nuitee.com","linkedin":"http://www.linkedin.com/in/andrew-handcock-3570836a","industry":"information technology & services","employees":"290","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"CR2","firstName":"Denise","lastName":"Maher","title":"Talent Acquisition Manager","email":"denise.maher@cr2.com","linkedin":"http://www.linkedin.com/in/denise-maher-cipd-assoc-997085aa","industry":"banking","employees":"230","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"ESW","firstName":"Victoria","lastName":"Cigolea","title":"Senior Talent Acquisition Partner","email":"vcigolea@eshopworld.com","linkedin":"http://www.linkedin.com/in/victoria-cigolea-471aa734","industry":"information technology & services","employees":"1100","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Everseen","firstName":"Genevieve","lastName":"O'Neill","title":"Talent Acquisition Manager","email":"genevieve.oneill@everseen.com","linkedin":"http://www.linkedin.com/in/genevievedwyer","industry":"information technology & services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Everseen","firstName":"Sebastian","lastName":"Jagiello","title":"Talent Acquisition Specialist","email":"sebastian.jagiello@everseen.com","linkedin":"http://www.linkedin.com/in/sebastianjagiello","industry":"information technology & services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Fenergo","firstName":"Gary","lastName":"Flanagan","title":"Talent Partner","email":"gary.flanagan@fenergo.com","linkedin":"http://www.linkedin.com/in/gary-flanagan-873259a0","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Amach","firstName":"Shane","lastName":"Carton","title":"Talent Acquisition Partner - Senior","email":"shane.carton@amach.com","linkedin":"http://www.linkedin.com/in/shane-carton","industry":"information technology & services","employees":"190","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Fenergo","firstName":"Lee","lastName":"Chalmers","title":"Senior Talent Partner (Technical Recruitment)","email":"lee.chalmers@fenergo.com","linkedin":"http://www.linkedin.com/in/lee-chalmers007","industry":"financial services","employees":"900","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Kneat Solutions","firstName":"Corrina","lastName":"Noonan","title":"Talent Acquisition Specialist","email":"corrina.noonan@kneat.com","linkedin":"http://www.linkedin.com/in/corrina-noonan-56707264","industry":"information technology & services","employees":"300","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"ESW","firstName":"Patrick","lastName":"Prizeman","title":"Talent Acquisition Partner","email":"pprizeman@esw.com","linkedin":"http://www.linkedin.com/in/patrick-prizeman-b79704149","industry":"information technology & services","employees":"1100","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"ESW","firstName":"Louise","lastName":"McCann","title":"Director, Talent Acquisition","email":"lmccann@esw.com","linkedin":"http://www.linkedin.com/in/loumccann","industry":"information technology & services","employees":"1100","status":"Not Started","contacted":"","followUp":"","notes":""},{"tier":"Tertiary","company":"Spanish Point Technologies","firstName":"Anne","lastName":"Lawless","title":"Recruiter","email":"anne.lawless@spanishpoint.ie","linkedin":"http://www.linkedin.com/in/anne-lawless-2098391b5","industry":"information technology & services","employees":"110","status":"Not Started","contacted":"","followUp":"","notes":""}];
+
+// ============================================================
+// STATE
+// ============================================================
+let contacts=[], editingIdx=null, selectedContact=null, currentPage=1, PER_PAGE=10;
+
+// ── Safe storage: works in WhatsApp webview, Safari file://, everywhere ──
+const _mem={};
+const store={
+  get(k){try{return localStorage.getItem(k);}catch(e){return _mem[k]||null;}},
+  set(k,v){try{localStorage.setItem(k,v);}catch(e){_mem[k]=v;}}
+};
+
+function loadContacts(){
+  try{const s=store.get('yug_v3');if(s){contacts=JSON.parse(s);}else{contacts=JSON.parse(JSON.stringify(INIT));save();}}
+  catch(e){contacts=JSON.parse(JSON.stringify(INIT));}
+}
+function save(){try{store.set('yug_v3',JSON.stringify(contacts));}catch(e){}}
+
+// ============================================================
+// TABS
+// ============================================================
+const TABS=['dashboard','tracker','ai','weekly','followups'];
+function switchTab(tab){
+  TABS.forEach((t,i)=>{
+    document.getElementById('panel-'+t).classList.toggle('active',t===tab);
+    document.querySelectorAll('.bnav-item')[i].classList.toggle('active',t===tab);
+    document.querySelectorAll('.dtab')[i].classList.toggle('active',t===tab);
+  });
+  document.getElementById('main-scroll').scrollTop=0;
+  if(tab==='tracker')renderTracker();
+  if(tab==='ai')renderAIList();
+  if(tab==='weekly')renderWeekly();
+  if(tab==='followups')renderFollowups();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+const TIER_C={Primary:'#a89fff',Secondary:'#ff9ab0',Tertiary:'#7fffaa'};
+const TIER_BG={Primary:'rgba(108,99,255,.14)',Secondary:'rgba(255,101,132,.14)',Tertiary:'rgba(67,233,123,.14)'};
+function ini(c){return(c.firstName[0]||'')+(c.lastName[0]||'');}
+function statusCls(s){const m={'Not Started':'not-started',Contacted:'contacted',Replied:'replied','Follow-Up':'follow-up',Interview:'interview',Closed:'closed'};return m[s]||'not-started';}
+function today(){return new Date().toISOString().split('T')[0];}
+function fuDate(){return new Date(Date.now()+6*864e5).toISOString().split('T')[0];}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats(){
+  const cont=contacts.filter(c=>c.status!=='Not Started').length;
+  const rep=contacts.filter(c=>c.status==='Replied'||c.status==='Interview').length;
+  document.getElementById('hs-total').textContent=contacts.length;
+  document.getElementById('hs-done').textContent=cont;
+  document.getElementById('hs-rep').textContent=rep;
+  document.getElementById('kpi-total').textContent=contacts.length;
+  document.getElementById('kpi-cont').textContent=cont;
+  document.getElementById('kpi-rep').textContent=rep;
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  // queue
+  const ns=contacts.filter(c=>c.status==='Not Started');
+  const queue=[...ns.filter(c=>c.tier==='Secondary').slice(0,4),...ns.filter(c=>c.tier==='Tertiary').slice(0,4),...ns.filter(c=>c.tier==='Primary').slice(0,7)].slice(0,10);
+  const qEl=document.getElementById('dash-queue');
+  qEl.innerHTML=queue.length?queue.map(c=>`
+    <div class="queue-item" onclick="openModal(${contacts.indexOf(c)})">
+      <div class="avatar" style="background:${TIER_BG[c.tier]};color:${TIER_C[c.tier]}">${ini(c)}</div>
+      <div class="qi-info">
+        <div class="qi-name">${c.firstName} ${c.lastName}</div>
+        <div class="qi-meta">${c.company} · ${c.title.substring(0,35)}</div>
+      </div>
+      <span class="badge ${c.tier.toLowerCase()}">${c.tier}</span>
+    </div>`).join('')
+    :'<div class="empty-state"><div class="icon">🎉</div>All contacted!</div>';
+
+  // tier progress
+  const tp=document.getElementById('tier-progress');
+  tp.innerHTML=['Primary','Secondary','Tertiary'].map(t=>{
+    const all=contacts.filter(c=>c.tier===t),done=all.filter(c=>c.status!=='Not Started').length,pct=all.length?Math.round(done/all.length*100):0;
+    return`<div class="tier-row"><div class="tier-header"><span><span class="badge ${t.toLowerCase()}">${t}</span></span><span style="font-size:11px">${done}/${all.length}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${TIER_C[t]}"></div></div></div>`;
+  }).join('');
+
+  // follow-ups
+  const now=new Date();
+  const due=contacts.filter(c=>{if(!c.followUp)return false;const d=new Date(c.followUp);return d<=now&&c.status!=='Replied'&&c.status!=='Interview'&&c.status!=='Closed';});
+  const fuEl=document.getElementById('dash-followups');
+  fuEl.innerHTML=due.length?due.slice(0,4).map(c=>{
+    const d=new Date(c.followUp),days=Math.floor((now-d)/864e5),urg=days>2;
+    return`<div class="alert-row ${urg?'urgent':'normal'}"><div class="alert-dot"></div><div style="flex:1"><div style="font-family:var(--font-head);font-size:12px;font-weight:700">${c.firstName} ${c.lastName}</div><div style="font-size:10px;color:var(--muted)">${c.company} · ${days===0?'Today':days+'d overdue'}</div></div><button class="action-btn prim" style="font-size:10px;padding:5px 10px" onclick="openModal(${contacts.indexOf(c)})">Update</button></div>`;
+  }).join(''):'<div style="font-size:11px;color:var(--muted);padding:6px 0">No follow-ups due — great!</div>';
+}
+
+// ============================================================
+// TRACKER (card-based, mobile-friendly)
+// ============================================================
+function getFiltered(){
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  const tier=document.getElementById('tier-filter')?.value||'';
+  const status=document.getElementById('status-filter')?.value||'';
+  return contacts.filter(c=>{
+    const m=!q||`${c.firstName} ${c.lastName} ${c.company} ${c.title}`.toLowerCase().includes(q);
+    return m&&(!tier||c.tier===tier)&&(!status||c.status===status);
+  });
+}
+
+function renderTracker(){
+  const filtered=getFiltered();
+  const pages=Math.ceil(filtered.length/PER_PAGE);
+  if(currentPage>pages)currentPage=1;
+  const slice=filtered.slice((currentPage-1)*PER_PAGE,currentPage*PER_PAGE);
+  document.getElementById('tracker-count').textContent=`Showing ${slice.length} of ${filtered.length} contacts`;
+
+  document.getElementById('tracker-list').innerHTML=slice.map(c=>{
+    const idx=contacts.indexOf(c);
+    return`<div class="contact-card">
+      <div class="cc-top">
+        <div class="avatar" style="background:${TIER_BG[c.tier]};color:${TIER_C[c.tier]};width:42px;height:42px;border-radius:10px;font-size:13px">${ini(c)}</div>
+        <div class="cc-info">
+          <div class="cc-name">${c.firstName} ${c.lastName}</div>
+          <div class="cc-company">${c.company}</div>
+          <div class="cc-title">${c.title}</div>
+        </div>
+      </div>
+      <div class="cc-meta">
+        <span class="badge ${c.tier.toLowerCase()}">${c.tier}</span>
+        <span class="status-badge ${statusCls(c.status)}">${c.status}</span>
+        ${c.contacted?`<span style="font-size:9px;color:var(--muted)">📅 ${c.contacted}</span>`:''}
+        ${c.email?`<span style="font-size:9px;color:var(--muted)">✉️ ${c.email}</span>`:''}
+      </div>
+      <div class="cc-actions">
+        <button class="action-btn" onclick="openModal(${idx})">✏️ Update</button>
+        <a href="${c.linkedin}" target="_blank" style="text-decoration:none"><button class="action-btn">🔗 LinkedIn</button></a>
+        ${c.email?`<a href="mailto:${c.email}" style="text-decoration:none"><button class="action-btn">✉️ Email</button></a>`:''}
+        <button class="action-btn prim" onclick="selectAndGoAI(${idx})">✨ AI Draft</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // pagination
+  let pHtml='';
+  for(let i=1;i<=pages;i++){
+    if(pages<=7||i===1||i===pages||Math.abs(i-currentPage)<=1){
+      pHtml+=`<button class="action-btn ${i===currentPage?'prim':''}" onclick="goPage(${i})" style="min-width:36px;padding:6px">${i}</button>`;
+    }else if(Math.abs(i-currentPage)===2)pHtml+=`<span style="color:var(--muted);font-size:12px;padding:0 2px">…</span>`;
+  }
+  document.getElementById('tracker-pagination').innerHTML=pHtml;
+}
+
+function goPage(p){currentPage=p;renderTracker();document.getElementById('main-scroll').scrollTop=0;}
+function selectAndGoAI(idx){selectedContact=contacts[idx];switchTab('ai');setTimeout(()=>{renderAIList();prefillAI();},100);}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(idx){
+  editingIdx=idx;const c=contacts[idx];
+  document.getElementById('modal-title').textContent=`${c.firstName} ${c.lastName} · ${c.company}`;
+  document.getElementById('modal-status').value=c.status;
+  document.getElementById('modal-contacted').value=c.contacted;
+  document.getElementById('modal-followup').value=c.followUp;
+  document.getElementById('modal-notes').value=c.notes;
+  document.getElementById('status-modal').classList.add('active');
+}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+function saveModal(){
+  if(editingIdx===null)return;
+  contacts[editingIdx].status=document.getElementById('modal-status').value;
+  contacts[editingIdx].contacted=document.getElementById('modal-contacted').value;
+  contacts[editingIdx].followUp=document.getElementById('modal-followup').value;
+  contacts[editingIdx].notes=document.getElementById('modal-notes').value;
+  save();closeModal('status-modal');updateStats();renderDashboard();
+  if(document.getElementById('panel-tracker').classList.contains('active'))renderTracker();
+  if(document.getElementById('panel-followups').classList.contains('active'))renderFollowups();
+}
+
+// ============================================================
+// TODAY'S QUEUE MODAL
+// ============================================================
+function showQueueModal(){
+  const ns=contacts.filter(c=>c.status==='Not Started');
+  const sec=ns.filter(c=>c.tier==='Secondary').slice(0,5);
+  const ter=ns.filter(c=>c.tier==='Tertiary').slice(0,5);
+  const pri=ns.filter(c=>c.tier==='Primary').slice(0,15);
+
+  const sec2=(title,items)=>items.length?`<div class="queue-section-title">${title}</div>${items.map(c=>`
+    <div class="qm-item">
+      <div class="avatar" style="background:${TIER_BG[c.tier]};color:${TIER_C[c.tier]};width:32px;height:32px;border-radius:7px;font-size:11px">${ini(c)}</div>
+      <div class="qm-info">
+        <div class="qm-name">${c.firstName} ${c.lastName}</div>
+        <div class="qm-meta">${c.company} · ${c.email}</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <a href="mailto:${c.email}?subject=${encodeURIComponent(TPLS[c.tier].subject)}&body=${encodeURIComponent(TPLS[c.tier].body.replace(/\[Name\]/g,c.firstName).replace(/\[Company\]/g,c.company))}" style="text-decoration:none"><button class="action-btn" style="font-size:10px;padding:5px 8px">✉️</button></a>
+        <a href="${c.linkedin}" target="_blank" style="text-decoration:none"><button class="action-btn" style="font-size:10px;padding:5px 8px">🔗</button></a>
+        <button class="action-btn prim" style="font-size:10px;padding:5px 8px" onclick="quickDone(${contacts.indexOf(c)})">✓</button>
+      </div>
+    </div>`).join('')}`:'';
+
+  document.getElementById('queue-modal-body').innerHTML=
+    sec2('📧 Email — Secondary (Hiring Managers)',sec)+
+    sec2('📤 Email — Tertiary (Recruiters)',ter)+
+    sec2('💼 LinkedIn — Primary (Peers)',pri);
+  document.getElementById('queue-modal').classList.add('active');
+}
+
+function quickDone(idx){
+  contacts[idx].status='Contacted';contacts[idx].contacted=today();contacts[idx].followUp=fuDate();
+  save();updateStats();renderDashboard();showQueueModal();
+}
+
+// ============================================================
+// EMAIL TEMPLATES
+// ============================================================
+const TPLS={
+  Primary:{
+    subject:'Exploring Analytics Opportunities',
+    body:`Hi [Name],
+
+I hope you're well. I came across your profile while exploring analytics teams in Ireland and wanted to reach out.
+
+I'm currently working in operations and workforce analytics at Teleperformance in Dublin, where I work across SQL, Power BI, dashboard reporting, SLA analysis, and performance reporting. Before this, I worked on marketing analytics projects involving Python ETL workflows and campaign reporting.
+
+Your background at [Company] caught my attention because it seems like the kind of analytics environment I'm looking to grow into.
+
+I thought it would be great to connect and learn more about your experience there. If your team is hiring, or if there's someone you think I should connect with internally, I'd genuinely appreciate the guidance.
+
+Best regards,
+Yug`,
+    linkedin:`Hi [Name], came across your profile while exploring analytics teams in Ireland. Your background at [Company] looked really interesting, so thought I'd connect.`
+  },
+  Secondary:{
+    subject:'Exploring Data Analyst Opportunities',
+    body:`Hi [Name],
+
+I hope you're well. I came across your profile while exploring analytics teams at [Company] and wanted to introduce myself briefly.
+
+I'm currently based in Dublin and working at Teleperformance across operations and workforce analytics, focusing on SQL reporting, Power BI dashboards, SLA analysis, and reporting automation.
+
+Previously, I worked on marketing analytics projects involving Python ETL workflows, dashboard reporting, and campaign analytics. I've enjoyed solving practical reporting problems that support better decision-making.
+
+I'm currently exploring opportunities to grow in a more dedicated analytics or BI-focused environment.
+
+If your team is hiring, or if there's someone you think I should connect with internally, I'd genuinely appreciate the guidance.
+
+Best regards,
+Yug`,
+    linkedin:`Hi [Name], I was exploring analytics teams at [Company] and came across your profile. I currently work across operations and workforce analytics in Dublin and thought it would be great to connect.`
+  },
+  Tertiary:{
+    subject:'Reaching Out Regarding Analytics Opportunities',
+    body:`Hi [Name],
+
+I hope you are well.
+
+I'm currently exploring Data Analyst / BI Analyst opportunities in Ireland and wanted to introduce myself briefly.
+
+I'm based in Dublin and currently work at Teleperformance across operations and workforce analytics, with experience in SQL, Power BI, dashboard reporting, SLA analysis, reporting automation, and performance analytics.
+
+Before this, I worked on marketing analytics projects involving Python ETL workflows, reporting dashboards, and campaign analytics.
+
+I'm mainly looking for opportunities related to reporting & analytics, business intelligence, operations analytics, or customer insights.
+
+I came across your profile while researching analytics hiring at [Company] and thought I'd reach out directly.
+
+If there's any relevant opportunity within your team, I'd love to connect and learn more.
+
+Best regards,
+Yug`,
+    linkedin:`Hi [Name], I came across your profile while researching analytics hiring in Ireland. I'm currently exploring Data Analyst / BI opportunities and thought I'd reach out and connect.`
+  }
+};
+
+// ============================================================
+// AI PANEL
+// ============================================================
+function renderAIList(){
+  const q=(document.getElementById('ai-search')?.value||'').toLowerCase();
+  const list=contacts.filter(c=>!q||`${c.firstName} ${c.lastName} ${c.company}`.toLowerCase().includes(q));
+  document.getElementById('ai-list').innerHTML=list.map(c=>{
+    const idx=contacts.indexOf(c),sel=selectedContact&&contacts.indexOf(selectedContact)===idx;
+    return`<div class="ai-row ${sel?'sel':''}" onclick="pickAI(${idx})">
+      <div class="avatar" style="background:${TIER_BG[c.tier]};color:${TIER_C[c.tier]};width:30px;height:30px;border-radius:6px;font-size:11px;flex-shrink:0">${ini(c)}</div>
+      <div class="ar-info"><div class="ar-name">${c.firstName} ${c.lastName}</div><div class="ar-sub">${c.company} · <span class="badge ${c.tier.toLowerCase()}">${c.tier}</span></div></div>
+    </div>`;
+  }).join('');
+}
+
+function pickAI(idx){selectedContact=contacts[idx];renderAIList();prefillAI();}
+
+function prefillAI(){
+  if(!selectedContact)return;
+  const c=selectedContact,t=TPLS[c.tier];
+  const body=t.body.replace(/\[Name\]/g,c.firstName).replace(/\[Company\]/g,c.company);
+  const li=t.linkedin.replace(/\[Name\]/g,c.firstName).replace(/\[Company\]/g,c.company);
+  document.getElementById('email-subject').textContent=t.subject;
+  const eo=document.getElementById('email-output');eo.textContent=body;eo.classList.remove('ph');
+  const lo=document.getElementById('li-output');lo.textContent=li;lo.classList.remove('ph');
+  updateCharCount(li);
+  document.getElementById('gen-email-btn').disabled=false;
+  document.getElementById('gen-li-btn').disabled=false;
+}
+
+function updateCharCount(t){
+  const el=document.getElementById('char-count');
+  el.textContent=`${t.length} / 300`;
+  el.className='char-count'+(t.length>280?' warn':'');
+}
+
+// ── Safe fetch: works when online, gracefully falls back when blocked ──
+async function safeFetch(url, opts){
+  try{
+    const r=await fetch(url, opts);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  }catch(e){
+    return null; // caller handles null = offline/blocked
+  }
+}
+
+async function generateEmail(){
+  if(!selectedContact)return;
+  const c=selectedContact,btn=document.getElementById('gen-email-btn'),icon=document.getElementById('gen-email-icon');
+  btn.disabled=true;icon.innerHTML='<span class="loading"><span></span><span></span><span></span></span>';
+  document.getElementById('email-output').textContent='Generating…';
+  const prompt=`You are Yug, a data analyst in Dublin at Teleperformance (SQL, Power BI, operations analytics, SLA reporting, automation). Previously worked on marketing analytics (Python ETL, campaign reporting). Looking for Data Analyst / BI Analyst roles in Ireland.\n\nWrite a highly personalised outreach email to ${c.firstName} ${c.lastName}, ${c.title} at ${c.company} (${c.industry}, ~${c.employees} employees). They are a ${c.tier} contact (${c.tier==='Primary'?'analytics peer':c.tier==='Secondary'?'analytics/hiring lead':'recruiter/talent partner'}).\n\nRequirements:\n- Open with just their first name\n- Reference their specific role and company naturally\n- Under 140 words, warm but professional\n- Clear soft ask at the end\n- Sign off as Yug\n- Sound completely human, not templated\n\nReturn ONLY the email body, no subject line, no preamble.`;
+  const data=await safeFetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  const eo=document.getElementById('email-output');
+  if(data && data.content){
+    eo.textContent=data.content.find(b=>b.type==='text')?.text||'';
+  } else {
+    // Offline or blocked — use smart template (still personalised)
+    eo.textContent=TPLS[c.tier].body.replace(/\[Name\]/g,c.firstName).replace(/\[Company\]/g,c.company);
+    showToast('Using smart template (AI needs internet)');
+  }
+  eo.classList.remove('ph');
+  btn.disabled=false;icon.textContent='✨';
+}
+
+async function generateLI(){
+  if(!selectedContact)return;
+  const c=selectedContact,btn=document.getElementById('gen-li-btn'),icon=document.getElementById('gen-li-icon');
+  btn.disabled=true;icon.innerHTML='<span class="loading"><span></span><span></span><span></span></span>';
+  document.getElementById('li-output').textContent='Generating…';
+  const prompt=`Write a LinkedIn connection request message from Yug (data analyst in Dublin, operations analytics at Teleperformance, looking for Data Analyst roles) to ${c.firstName} ${c.lastName} (${c.title} at ${c.company}).\nSTRICT rules: max 280 chars, natural/specific, use their actual name (${c.firstName}), no placeholders. Return only the message.`;
+  const data=await safeFetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+  const lo=document.getElementById('li-output');
+  let text='';
+  if(data && data.content){
+    text=(data.content.find(b=>b.type==='text')?.text||'').trim();
+  } else {
+    text=TPLS[c.tier].linkedin.replace(/\[Name\]/g,c.firstName).replace(/\[Company\]/g,c.company);
+    showToast('Using smart template (AI needs internet)');
+  }
+  lo.textContent=text;lo.classList.remove('ph');updateCharCount(text);
+  btn.disabled=false;icon.textContent='✨';
+}
+
+function copyEmail(){
+  const t=document.getElementById('email-output').textContent;
+  if(!t||t.includes('Select a contact'))return;
+  navigator.clipboard.writeText(t).then(()=>{showToast('Email copied!');});
+}
+
+function copyLI(){
+  const t=document.getElementById('li-output').textContent;
+  if(!t||t.includes('LinkedIn'))return;
+  navigator.clipboard.writeText(t).then(()=>{showToast('LinkedIn message copied!');});
+}
+
+function openLinkedIn(){if(selectedContact)window.open(selectedContact.linkedin,'_blank');}
+
+function markContacted(){
+  if(!selectedContact)return;
+  const idx=contacts.indexOf(selectedContact);
+  contacts[idx].status='Contacted';contacts[idx].contacted=today();contacts[idx].followUp=fuDate();
+  save();updateStats();renderDashboard();
+  showToast(`${selectedContact.firstName} marked as Contacted ✓`);
+}
+
+function openEmailModal(){
+  if(!selectedContact)return;
+  const subject=document.getElementById('email-subject').textContent;
+  const body=document.getElementById('email-output').textContent;
+  document.getElementById('email-to-val').textContent=`${selectedContact.firstName} ${selectedContact.lastName} <${selectedContact.email}>`;
+  document.getElementById('email-subject-modal').textContent=subject;
+  document.getElementById('email-body-modal').textContent=body;
+  document.getElementById('email-modal').style.display='flex';
+  document.getElementById('email-modal').classList.add('active');
+}
+
+function copyEmailFromModal(){
+  const body=document.getElementById('email-body-modal').textContent;
+  navigator.clipboard.writeText(body).then(()=>showToast('Copied!'));
+}
+
+function openMailto(){
+  if(!selectedContact)return;
+  const sub=encodeURIComponent(document.getElementById('email-subject').textContent);
+  const body=encodeURIComponent(document.getElementById('email-output').textContent);
+  window.location.href=`mailto:${selectedContact.email}?subject=${sub}&body=${body}`;
+}
+
+// Fix: email modal uses its own overlay
+document.getElementById('email-modal').addEventListener('click',function(e){if(e.target===this)closeEmailModal();});
+function closeEmailModal(){
+  document.getElementById('email-modal').style.display='none';
+  document.getElementById('email-modal').classList.remove('active');
+}
+// override the generic closeModal for email-modal
+const _origClose=window.closeModal;window.closeModal=function(id){
+  if(id==='email-modal'){closeEmailModal();}else{_origClose(id);}
+};
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#43e97b;color:#000;font-family:var(--font-head);font-weight:700;font-size:12px;padding:10px 20px;border-radius:30px;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>{t.style.opacity='0';},2000);
+}
+
+// ============================================================
+// WEEKLY PLAN
+// ============================================================
+const WEEKLY=[
+  {day:'Monday',tasks:[{t:'📧 5 Recruiter Emails',d:'Tertiary tier — short, direct, personalised'},{t:'📧 5 Hiring Manager Emails',d:'Secondary tier — focus on analytics value'},{t:'💼 10 LinkedIn Requests',d:'Primary tier — peer connections'},{t:'📝 Post Analytics Insight',d:'Share a data tip on LinkedIn — builds visibility'}]},
+  {day:'Tuesday',tasks:[{t:'💼 10–15 LinkedIn Requests',d:'Primary tier — continue peer outreach'},{t:'📧 5 Recruiter Emails',d:'Tertiary tier contacts'},{t:'🔁 Check Replies',d:'Respond within 2h to any messages'}]},
+  {day:'Wednesday',tasks:[{t:'📧 5 Hiring Manager Emails',d:'Secondary tier'},{t:'💼 10 LinkedIn Requests',d:'Primary tier'},{t:'🔗 Engage on LinkedIn',d:'Comment on 3 analytics posts — stay visible'}]},
+  {day:'Thursday',tasks:[{t:'📧 5 Recruiter Emails',d:'Tertiary tier'},{t:'💼 10–15 LinkedIn Requests',d:'Primary tier'},{t:'🔁 Follow-Up Check',d:'Anyone contacted 5–7 days ago? Send light follow-up'}]},
+  {day:'Friday',tasks:[{t:'📊 Weekly Tracker Review',d:'Update statuses, notes, replies in tracker'},{t:'🔁 Send All Follow-Ups',d:'Light, natural messages to week-old contacts'},{t:'📝 LinkedIn Post',d:'Analytics insight or reflection'},{t:'🎯 Plan Next Week',d:'Queue next batch of contacts'}]}
+];
+const TIPS=[
+  {i:'🎯',t:'Personalise Every One',d:'One specific detail (their role, company, industry) increases reply rate 3x. Generic = instant delete.'},
+  {i:'⚡',t:'Speed is a Weapon',d:'Most people wait weeks. You send today. First-mover advantage is very real in outreach.'},
+  {i:'💬',t:'The Warm Follow-Up',d:'Never say "just following up." Say "wanted to make sure this didn\'t get buried — would love 10 min."'},
+  {i:'📊',t:'Post Analytics Content',d:'One data insight weekly. Hiring managers search LinkedIn. Your posts make you visible before you reach out.'},
+  {i:'🔗',t:'Peer → Referral Pipeline',d:'Primary contacts (peers) can refer you internally. A referral skips the ATS entirely.'},
+  {i:'🧠',t:'Mirror Their Language',d:'If the job post says "reporting automation" — use that exact phrase. ATS and humans both respond.'},
+];
+function renderWeekly(){
+  document.getElementById('weekly-content').innerHTML=WEEKLY.map(d=>`
+    <div class="week-day">
+      <div class="week-day-header">${d.day}<span class="task-count">${d.tasks.length}</span></div>
+      ${d.tasks.map(t=>`<div class="week-task"><strong>${t.t}</strong><span>${t.d}</span></div>`).join('')}
+    </div>`).join('');
+  document.getElementById('tips-content').innerHTML=TIPS.map(t=>`
+    <div class="tip-card"><div style="font-family:var(--font-head);font-size:13px;font-weight:700;margin-bottom:5px">${t.i} ${t.t}</div><div style="font-size:11px;color:var(--muted);line-height:1.6">${t.d}</div></div>`).join('');
+}
+
+// ============================================================
+// FOLLOW-UPS
+// ============================================================
+function renderFollowups(){
+  const now=new Date();
+  const due=contacts.filter(c=>{
+    if(!c.followUp)return false;
+    const d=new Date(c.followUp),diff=(d-now)/864e5;
+    return diff<=7&&c.status!=='Replied'&&c.status!=='Closed'&&c.status!=='Interview';
+  }).sort((a,b)=>new Date(a.followUp)-new Date(b.followUp));
+
+  const el=document.getElementById('followups-list');
+  if(!due.length){el.innerHTML='<div class="empty-state"><div class="icon">✨</div>No follow-ups in next 7 days. Keep outreaching!</div>';return;}
+
+  el.innerHTML=due.map(c=>{
+    const d=new Date(c.followUp),diff=Math.floor((d-now)/864e5),urg=diff<=0;
+    const label=diff<0?`${Math.abs(diff)}d overdue`:diff===0?'Today':`in ${diff}d`;
+    const msg=`Hi ${c.firstName}, just wanted to make sure my previous message didn't get buried — would still love to connect and learn more about your work at ${c.company}. Happy to keep it brief!`;
+    const mailto=`mailto:${c.email}?subject=${encodeURIComponent('Following up — Data Analyst Opportunities')}&body=${encodeURIComponent(msg)}`;
+    return`<div class="fu-card ${urg?'urgent':''}">
+      <div class="fu-top">
+        <div class="avatar" style="background:${TIER_BG[c.tier]};color:${TIER_C[c.tier]};width:42px;height:42px;border-radius:10px;font-size:13px;flex-shrink:0">${ini(c)}</div>
+        <div class="fu-info"><div class="fu-name">${c.firstName} ${c.lastName} <span class="badge ${c.tier.toLowerCase()}">${c.tier}</span></div><div class="fu-meta">${c.company} · ${c.title}</div><div class="fu-meta">✉️ ${c.email}</div></div>
+        <div class="fu-when"><div class="fu-date" style="color:${urg?'var(--accent2)':'var(--gold)'}">${label}</div><div class="fu-sub">${c.followUp}</div></div>
+      </div>
+      <div class="fu-msg"><strong>💬 Suggested Follow-Up:</strong>${msg}</div>
+      <div class="fu-actions">
+        <button class="copy-btn" onclick="navigator.clipboard.writeText(${JSON.stringify(msg)}).then(()=>showToast('Copied!'))">📋 Copy</button>
+        <a href="${c.linkedin}" target="_blank" style="text-decoration:none"><button class="action-btn">🔗 LinkedIn</button></a>
+        <a href="${mailto}" style="text-decoration:none"><button class="action-btn">✉️ Send Email</button></a>
+        <button class="action-btn prim" onclick="openModal(${contacts.indexOf(c)})">✏️ Update</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadContacts();updateStats();renderDashboard();renderWeekly();
+// close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+</script>
+</body>
+</html>
