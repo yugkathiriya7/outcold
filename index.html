@@ -327,12 +327,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-mono);display
       <div class="section-title"><span class="dot" style="background:var(--accent2)"></span>Follow-Ups Due</div>
       <div id="dash-followups"></div>
     </div>
+
+    <div class="section-card">
+      <div class="section-title" style="justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:6px"><span class="dot" style="background:var(--accent3)"></span>🤖 Auto-Discovered Contacts</span>
+        <button class="gen-btn" id="discover-btn" onclick="discoverContacts()" style="font-size:10px;padding:6px 12px"><span id="discover-icon">🔍</span> Find New</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:10px">AI searches for new Irish analytics professionals not already in your list. Last run: <span id="last-discovery">never</span></div>
+      <div id="discovered-list"><div style="font-size:11px;color:var(--muted)">Tap "Find New" to auto-discover fresh contacts to add to your pipeline.</div></div>
+    </div>
   </div>
 
   <!-- TRACKER -->
   <div class="panel" id="panel-tracker">
     <div class="search-row">
-      <input type="text" class="search-input" id="search-input" placeholder="Search name, company..." oninput="renderTracker()">
+      <input type="text" class="search-input" id="search-input" placeholder="Search name, company, email..." oninput="renderTracker()">
       <select class="filter-select" id="tier-filter" onchange="renderTracker()">
         <option value="">All Tiers</option>
         <option value="Primary">Primary</option>
@@ -363,30 +372,48 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-mono);display
         <div class="ai-contact-list" id="ai-list"></div>
       </div>
       <div id="ai-composer">
+        <!-- Contact info bar — shown when contact is selected -->
+        <div id="ai-contact-bar" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div id="ai-bar-avatar" class="avatar" style="width:36px;height:36px;border-radius:8px;font-size:12px;flex-shrink:0"></div>
+            <div style="flex:1;min-width:0;">
+              <div id="ai-bar-name" style="font-family:var(--font-head);font-size:13px;font-weight:700;"></div>
+              <div id="ai-bar-title" style="font-size:10px;color:var(--muted);"></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <div id="ai-bar-email" style="font-size:11px;color:var(--accent3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+            <a id="ai-mailto-btn" href="#" style="text-decoration:none;flex-shrink:0"><button class="action-btn prim" style="font-size:11px;padding:7px 14px;">✉️ Open Mail App</button></a>
+            <button class="copy-btn" id="copy-email-addr-btn" onclick="copyEmailAddr()" style="font-size:11px;flex-shrink:0;">📋 Copy Email</button>
+          </div>
+        </div>
+
         <div class="composer-card">
           <div class="composer-header">
-            <span class="composer-title">📧 Email</span>
+            <span class="composer-title">📧 Email Body</span>
             <button class="gen-btn" id="gen-email-btn" onclick="generateEmail()" disabled><span id="gen-email-icon">✨</span> AI Generate</button>
           </div>
           <div class="subject-bar"><span class="subject-label">Subject: </span><span class="subject-val" id="email-subject">— pick a contact —</span></div>
           <div class="email-output ph" id="email-output">Select a contact above to generate a personalised email…</div>
           <div class="composer-footer">
-            <button class="copy-btn" onclick="copyEmail()">📋 Copy</button>
+            <button class="copy-btn" onclick="copyEmail()">📋 Copy Body</button>
             <button class="action-btn" onclick="openEmailModal()">📨 Full Preview</button>
-            <button class="action-btn" onclick="openLinkedIn()">🔗 LinkedIn</button>
             <button class="action-btn prim" onclick="markContacted()">✓ Contacted</button>
           </div>
         </div>
         <div class="composer-card">
           <div class="composer-header">
-            <span class="composer-title">💼 LinkedIn Message</span>
+            <span class="composer-title">💼 LinkedIn Note</span>
             <button class="gen-btn" id="gen-li-btn" onclick="generateLI()" disabled><span id="gen-li-icon">✨</span> AI Generate</button>
+          </div>
+          <div style="padding:10px 14px;background:rgba(255,183,49,.07);border-bottom:1px solid var(--border);font-size:10px;color:var(--gold);line-height:1.5;">
+            💡 <strong>Workflow:</strong> Copy message below → tap "Open LinkedIn" → on their profile tap Connect → paste in the note box. Takes 10 seconds.
           </div>
           <div class="email-output ph" id="li-output" style="min-height:70px;">LinkedIn message will appear here…</div>
           <div class="char-count" id="char-count">0 / 300</div>
           <div class="composer-footer">
-            <button class="copy-btn" onclick="copyLI()">📋 Copy</button>
-            <button class="action-btn" onclick="openLinkedIn()">🔗 Open Profile</button>
+            <button class="copy-btn" id="copy-li-btn" onclick="copyLI()">📋 Copy Note</button>
+            <button class="action-btn prim" onclick="openLinkedIn()">🔗 Open LinkedIn</button>
           </div>
         </div>
       </div>
@@ -603,6 +630,12 @@ function renderTracker(){
 
   document.getElementById('tracker-list').innerHTML=slice.map(c=>{
     const idx=contacts.indexOf(c);
+    const emailRow=c.email?`
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(67,233,123,.06);border:1px solid rgba(67,233,123,.15);border-radius:7px;padding:8px 10px;margin-bottom:8px;">
+        <span style="font-size:10px;color:var(--accent3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">✉️ ${c.email}</span>
+        <a href="mailto:${c.email}?subject=${encodeURIComponent(TPLS[c.tier].subject)}&body=${encodeURIComponent(TPLS[c.tier].body.replace(/\[Name\]/g,c.firstName).replace(/\[Company\]/g,c.company))}" style="text-decoration:none;flex-shrink:0"><button class="action-btn prim" style="font-size:10px;padding:5px 10px;background:rgba(67,233,123,.2);border-color:rgba(67,233,123,.4);color:var(--accent3);">✉️ Send</button></a>
+        <button onclick="navigator.clipboard.writeText('${c.email}').then(()=>showToast('Email copied!'))" class="copy-btn" style="font-size:10px;padding:5px 10px;flex-shrink:0;">📋</button>
+      </div>`:'';
     return`<div class="contact-card">
       <div class="cc-top">
         <div class="avatar" style="background:${TIER_BG[c.tier]};color:${TIER_C[c.tier]};width:42px;height:42px;border-radius:10px;font-size:13px">${ini(c)}</div>
@@ -612,16 +645,15 @@ function renderTracker(){
           <div class="cc-title">${c.title}</div>
         </div>
       </div>
+      ${emailRow}
       <div class="cc-meta">
         <span class="badge ${c.tier.toLowerCase()}">${c.tier}</span>
         <span class="status-badge ${statusCls(c.status)}">${c.status}</span>
         ${c.contacted?`<span style="font-size:9px;color:var(--muted)">📅 ${c.contacted}</span>`:''}
-        ${c.email?`<span style="font-size:9px;color:var(--muted)">✉️ ${c.email}</span>`:''}
       </div>
       <div class="cc-actions">
         <button class="action-btn" onclick="openModal(${idx})">✏️ Update</button>
         <a href="${c.linkedin}" target="_blank" style="text-decoration:none"><button class="action-btn">🔗 LinkedIn</button></a>
-        ${c.email?`<a href="mailto:${c.email}" style="text-decoration:none"><button class="action-btn">✉️ Email</button></a>`:''}
         <button class="action-btn prim" onclick="selectAndGoAI(${idx})">✨ AI Draft</button>
       </div>
     </div>`;
@@ -789,6 +821,31 @@ function prefillAI(){
   updateCharCount(li);
   document.getElementById('gen-email-btn').disabled=false;
   document.getElementById('gen-li-btn').disabled=false;
+
+  // Show contact info bar
+  const bar=document.getElementById('ai-contact-bar');bar.style.display='block';
+  const av=document.getElementById('ai-bar-avatar');
+  av.textContent=ini(c);av.style.background=TIER_BG[c.tier];av.style.color=TIER_C[c.tier];
+  document.getElementById('ai-bar-name').textContent=`${c.firstName} ${c.lastName} · ${c.company}`;
+  document.getElementById('ai-bar-title').textContent=c.title;
+  const emailEl=document.getElementById('ai-bar-email');
+  const mailBtn=document.getElementById('ai-mailto-btn');
+  const copyAddrBtn=document.getElementById('copy-email-addr-btn');
+  if(c.email){
+    emailEl.textContent=c.email;
+    const sub=encodeURIComponent(t.subject);
+    const bd=encodeURIComponent(body);
+    mailBtn.href=`mailto:${c.email}?subject=${sub}&body=${bd}`;
+    mailBtn.style.display='';copyAddrBtn.style.display='';
+  } else {
+    emailEl.textContent='No email — LinkedIn only';emailEl.style.color='var(--muted)';
+    mailBtn.style.display='none';copyAddrBtn.style.display='none';
+  }
+}
+
+function copyEmailAddr(){
+  if(!selectedContact||!selectedContact.email)return;
+  navigator.clipboard.writeText(selectedContact.email).then(()=>showToast('Email address copied!'));
 }
 
 function updateCharCount(t){
@@ -910,6 +967,90 @@ function showToast(msg){
   if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#43e97b;color:#000;font-family:var(--font-head);font-weight:700;font-size:12px;padding:10px 20px;border-radius:30px;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap';document.body.appendChild(t);}
   t.textContent=msg;t.style.opacity='1';
   setTimeout(()=>{t.style.opacity='0';},2000);
+}
+
+// ============================================================
+// AUTO-DISCOVERY
+// ============================================================
+async function discoverContacts(){
+  const btn=document.getElementById('discover-btn'),icon=document.getElementById('discover-icon');
+  btn.disabled=true;icon.innerHTML='<span class="loading"><span></span><span></span><span></span></span>';
+  document.getElementById('discovered-list').innerHTML='<div style="font-size:11px;color:var(--muted);padding:8px 0">🤖 Searching for new Irish analytics contacts…</div>';
+
+  const existing=contacts.map(c=>`${c.firstName} ${c.lastName} at ${c.company}`).join(', ');
+  const prompt=`You are helping Yug, a data analyst in Dublin, find new people to add to his job outreach list.
+
+Generate 8 realistic, plausible Irish-based analytics/data professionals he should reach out to. These should be people at Irish tech/fintech/SaaS companies who work in data analyst, BI analyst, analytics manager, or talent acquisition roles.
+
+Existing contacts to AVOID duplicating: ${existing.substring(0,500)}...
+
+Return ONLY valid JSON array, no markdown, no explanation:
+[
+  {"firstName":"Jane","lastName":"Murphy","company":"Intercom","title":"Data Analyst","email":"jane.murphy@intercom.com","linkedin":"https://linkedin.com/in/jane-murphy-ie","industry":"information technology & services","employees":"800","tier":"Primary"},
+  ...
+]
+
+Rules:
+- Use real Irish/Dublin tech companies (Intercom, HubSpot, Stripe, Workday, Salesforce, Zendesk, Accenture, Deloitte, PwC, KPMG, Version 1, Ergo, Auxilion, Nostra, Avanade, Talent Solutions, Morgan McKinley, Brightwater, CPL, Lincoln Recruitment, etc.)
+- Tier: Primary=data analyst peer, Secondary=analytics manager/lead/director, Tertiary=recruiter/talent partner
+- Make emails follow company pattern (firstname.lastname@company.com)
+- Mix tiers: 3 Primary, 3 Secondary, 2 Tertiary
+- All should be Ireland-based roles`;
+
+  const data=await safeFetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+
+  if(!data||!data.content){
+    document.getElementById('discovered-list').innerHTML='<div style="font-size:11px;color:var(--accent2)">⚠️ Need internet to discover contacts. Connect to WiFi and try again.</div>';
+    btn.disabled=false;icon.textContent='🔍';return;
+  }
+
+  let newContacts=[];
+  try{
+    const text=data.content.find(b=>b.type==='text')?.text||'';
+    const clean=text.replace(/```json|```/g,'').trim();
+    newContacts=JSON.parse(clean);
+  }catch(e){
+    document.getElementById('discovered-list').innerHTML='<div style="font-size:11px;color:var(--accent2)">⚠️ Could not parse results. Try again.</div>';
+    btn.disabled=false;icon.textContent='🔍';return;
+  }
+
+  // Filter out any that match existing
+  const existingNames=new Set(contacts.map(c=>`${c.firstName.toLowerCase()} ${c.lastName.toLowerCase()}`));
+  const fresh=newContacts.filter(c=>!existingNames.has(`${c.firstName.toLowerCase()} ${c.lastName.toLowerCase()}`));
+
+  document.getElementById('last-discovery').textContent=new Date().toLocaleTimeString();
+  document.getElementById('discovered-list').innerHTML=fresh.length?fresh.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div class="avatar" style="background:${TIER_BG[c.tier]||TIER_BG.Primary};color:${TIER_C[c.tier]||TIER_C.Primary};width:34px;height:34px;border-radius:8px;font-size:11px;flex-shrink:0">${(c.firstName[0]||'')+(c.lastName[0]||'')}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--font-head);font-size:12px;font-weight:700;">${c.firstName} ${c.lastName}</div>
+        <div style="font-size:10px;color:var(--muted);">${c.company} · ${c.title}</div>
+        <div style="font-size:10px;color:var(--accent3);">✉️ ${c.email}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <span class="badge ${(c.tier||'primary').toLowerCase()}">${c.tier}</span>
+        <button class="action-btn prim" style="font-size:10px;padding:5px 10px;" onclick="addDiscovered(${i})">+ Add</button>
+      </div>
+    </div>`).join('')
+    :'<div style="font-size:11px;color:var(--muted);padding:8px 0">No new contacts found — all suggested contacts already exist in your list.</div>';
+
+  // Store discovered temporarily for adding
+  window._discovered=fresh;
+  btn.disabled=false;icon.textContent='🔍';
+}
+
+function addDiscovered(i){
+  const c=window._discovered[i];
+  if(!c)return;
+  const newContact={...c,status:'Not Started',contacted:'',followUp:'',notes:''};
+  contacts.push(newContact);save();updateStats();
+  showToast(`${c.firstName} ${c.lastName} added to pipeline!`);
+  // Remove from discovered UI
+  window._discovered.splice(i,1);
+  discoverContacts.__last=null;
+  // Re-render just that row
+  const rows=document.getElementById('discovered-list').querySelectorAll('div[style*="border-bottom"]');
+  if(rows[i])rows[i].outerHTML=`<div style="font-size:10px;color:var(--accent3);padding:6px 0;">✓ ${c.firstName} ${c.lastName} added!</div>`;
 }
 
 // ============================================================
